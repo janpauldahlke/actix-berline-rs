@@ -1,25 +1,36 @@
+#![allow(unused)]
+
 use actix_web::{get, web, App, HttpRequest, HttpResponse, HttpServer};
 
-// a mvp of a web server
 #[derive(Debug, serde::Deserialize)]
-pub struct PersonParams {
+pub struct PersonQuery {
     name: String,
     location: String,
     age: u16,
 }
 
+#[derive(Debug, serde::Deserialize)]
+pub struct PersonParams {
+    id: String,
+    comment_id: String,
+}
+
 // endregion
 
-#[get("/foo")]
-async fn foo_querry_params(query: web::Query<PersonParams>) -> HttpResponse {
+#[get("/person")]
+async fn person_route_querry(query: web::Query<PersonQuery>) -> HttpResponse {
     let result = format!(
-        "route params are, name{} {} {}",
+        "route query params are, name{} {} {}",
         query.name, query.location, query.age
     );
     HttpResponse::Ok().body(result)
 }
-async fn index() -> HttpResponse {
-    HttpResponse::Ok().body("Hello, world!")
+#[get("/person/{id}/comments/{comment_id}")]
+async fn person_route_params(params: web::Path<PersonParams>) -> HttpResponse {
+    let args = params.into_inner();
+    println!("{:?}", args);
+    let result_text = format!("route params are, {} {}", args.id, args.comment_id);
+    HttpResponse::Ok().body(result_text)
 }
 
 async fn greet(name: web::Path<String>) -> HttpResponse {
@@ -37,8 +48,12 @@ async fn greet_handler(req: HttpRequest, path: web::Path<String>) -> HttpRespons
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let server =
-        HttpServer::new(|| App::new().service(foo_querry_params)).bind("127.0.0.1:8080")?;
+    let server = HttpServer::new(|| {
+        App::new()
+            .service(person_route_params)
+            .service(person_route_querry)
+    })
+    .bind("127.0.0.1:8080")?;
 
     server.run().await
 }
@@ -53,15 +68,30 @@ mod tests {
     };
 
     #[actix_web::test]
-    async fn test_foo_querry_params() {
-        let app = test::init_service(App::new().service(foo_querry_params)).await;
-        let request = TestRequest::with_uri("/foo?name=actix&location=world&age=43").to_request();
+    async fn test_person_route_querry() {
+        let app = test::init_service(App::new().service(person_route_querry)).await;
+        let request =
+            TestRequest::with_uri("/person?name=actix&location=world&age=43").to_request();
 
         let response = call_service(&app, request).await;
         assert!(response.status().is_success());
 
         let body = test::read_body(response).await;
         println!("{:?}", body.clone()); //borrowed
-        assert_eq!(body, "route params are, nameactix world 43");
+        assert_eq!(body, "route query params are, nameactix world 42");
+    }
+
+    #[actix_web::test]
+    async fn test_person_route_params() {
+        let app = test::init_service(App::new().service(person_route_params)).await;
+        let request =
+            TestRequest::with_uri("/person/PERSONID_1337/comments/COMMENT_ID_42").to_request();
+
+        let response = call_service(&app, request).await;
+        assert!(response.status().is_success());
+
+        let body = test::read_body(response).await;
+        println!("{:?}", body.clone()); //borrowed
+        assert_eq!(body, "route params are, PERSONID_1337 COMMENT_ID_42");
     }
 }
