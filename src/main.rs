@@ -20,19 +20,6 @@ pub struct PersonParams {
     comment_id: String,
 }
 
-//From https://github.com/actix/examples/blob/master/guards/src/main.rs
-pub struct ApiGuard;
-impl Guard for ApiGuard {
-    fn check(&self, ctx: &GuardContext<'_>) -> bool {
-        ctx.head()
-            .headers()
-            .get("Accept-Version")
-            .map_or(false, |hv| hv.as_bytes() == b"2")
-    }
-}
-
-// endregion
-
 #[get("/person")]
 async fn person_route_querry(query: web::Query<PersonQuery>) -> HttpResponse {
     let result = format!(
@@ -151,7 +138,7 @@ mod tests {
 
         let request = TestRequest::default()
             .uri("/guarded")
-            .insert_header(("X-SECRET", "HIDDEN"))
+            .insert_header((_HEADER, _SECRET))
             .to_request();
 
         let response = call_service(&app, request).await;
