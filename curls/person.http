@@ -10,5 +10,5 @@ GET {{url}}person/id_number_1337/comments/comment_number_42 HTTP/1.1
 GET {{url}}ferris HTTP/1.1
 
 ###
-GET {{url}}guarded/foo HTTP/1.1
+GET {{url}}guarded HTTP/1.1
 X-SECRET: HIDDEN

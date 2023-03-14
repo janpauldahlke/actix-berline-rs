@@ -85,10 +85,12 @@ async fn main() -> std::io::Result<()> {
             .service(greet_handler)
             .service(display_ferris)
             .service(
-                web::scope("/guarded")
-                    .route("/{params}", web::get().to(guarded_route))
-                    .guard(guard::Get())
-                    .guard(guard::Header(_HEADER, _SECRET)),
+                web::resource("/guarded").route(
+                    web::route()
+                        //.guard(guard::Get())
+                        .guard(guard::Header(_HEADER, _SECRET))
+                        .to(guarded_route),
+                ),
             )
     })
     .bind("127.0.0.1:8080")?;
@@ -121,7 +123,7 @@ mod tests {
 
     #[actix_web::test]
     async fn test_person_route_params() {
-        let app = test::init_service(App::new().service(person_route_params)).await;
+        let app = test::init_service(App::new().service(web::resource("/guarded"))).await;
         let request =
             TestRequest::with_uri("/person/PERSONID_1337/comments/COMMENT_ID_42").to_request();
 
@@ -131,5 +133,46 @@ mod tests {
         let body = test::read_body(response).await;
         println!("{:?}", body.clone()); //borrowed
         assert_eq!(body, "route params are, PERSONID_1337 COMMENT_ID_42");
+    }
+
+    #[actix_web::test]
+    async fn test_guarded_route_with_secret() {
+        let app = test::init_service(
+            App::new().service(
+                web::resource("/guarded").route(
+                    web::route()
+                        .guard(guard::Get())
+                        .guard(guard::Header(_HEADER, _SECRET))
+                        .to(guarded_route),
+                ),
+            ),
+        )
+        .await;
+
+        let request = TestRequest::default()
+            .uri("/guarded")
+            .insert_header(("X-SECRET", "HIDDEN"))
+            .to_request();
+
+        let response = call_service(&app, request).await;
+
+        // let body = test::read_body(response).await;
+        // println!("{:?}", body.clone()); //borrowed
+        // assert_eq!(body, "From guarded , you are authorized!");
+        assert!(response.status().is_success());
+    }
+
+    #[actix_web::test]
+    async fn test_guarded_route_without_secret() {
+        let app = test::init_service(App::new().service(person_route_params)).await;
+        let request =
+            //TestRequest::with_uri("/person/PERSONID_1337/comments/COMMENT_ID_42").to_request();
+            TestRequest::default()
+            .uri("/guarded")
+            .insert_header(("X-SECRET" , "WRONK_SECRET"))
+            .to_request();
+
+        let response = call_service(&app, request).await;
+        assert!(response.status().is_client_error());
     }
 }
