@@ -3,6 +3,16 @@
 ### query parameters
 GET http://127.0.0.1:8080/person?name=John&age=20&location=Hamburg HTTP/1.1
 
+###logic but wrong executed
+GET {{url}}person/Joh HTTP/1.1
+###
+POST {{url}}person/john11111 HTTP/1.1
+Content-Type: application/json
+
+{"name": "John"}
+
+
+
 ### path parameters
 GET {{url}}person/id_number_1337/comments/comment_number_42 HTTP/1.1
 
@@ -12,3 +22,5 @@ GET {{url}}ferris HTTP/1.1
 ###
 GET {{url}}guarded HTTP/1.1
 X-SECRET: HIDDEN
+
+

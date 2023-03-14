@@ -1,8 +1,11 @@
 #![allow(unused)]
+use std::fmt::format;
+
 use actix_web::{
     get,
     guard::{self, Guard, GuardContext},
     http::{self, header::HeaderValue},
+    post,
     web::{self, Path},
     App, Error, HttpRequest, HttpResponse, HttpServer,
 };
@@ -42,10 +45,25 @@ async fn greet_handler(req: HttpRequest, path: web::Path<String>) -> HttpRespons
     if name.len() > 5 {
         return HttpResponse::Ok().body(format!("Hello {:?}", name));
     } else {
-        return HttpResponse::BadRequest().into();
+        //return HttpResponse::BadRequest().into();
+        return HttpResponse::BadRequest()
+            .body(format!("Your name is to short!"))
+            .into();
     }
 }
 
+#[post("/person/{name}")]
+async fn post_greet_handler(req: HttpRequest, path: web::Path<String>) -> HttpResponse {
+    let name = path.into_inner();
+    if name.len() > 5 {
+        return HttpResponse::Ok().body(format!("You posted this name {:?}", name));
+    } else {
+        //return HttpResponse::BadRequest().into();
+        return HttpResponse::BadRequest()
+            .body(format!("Your name is to short!"))
+            .into();
+    }
+}
 #[get("/ferris")]
 async fn display_ferris() -> HttpResponse {
     HttpResponse::Ok()
@@ -70,6 +88,7 @@ async fn main() -> std::io::Result<()> {
             .service(person_route_params)
             .service(person_route_querry)
             .service(greet_handler)
+            .service(post_greet_handler)
             .service(display_ferris)
             .service(
                 web::resource("/guarded").route(
