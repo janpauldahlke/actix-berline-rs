@@ -16,3 +16,6 @@ Jörn kindly presented this list:
 >* What are the most important data structures and traits that >the web framework comes with?
 >* Is there any infrastructure for automatic testing?
 >* How does the framework work with async Rust?
+
+> we created some slides here
+* [slides.com](https://slides.com/d/f6Fnztg/live)
