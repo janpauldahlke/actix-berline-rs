@@ -5,3 +5,10 @@ GET http://127.0.0.1:8080/person?name=John&age=20&location=Hamburg HTTP/1.1
 
 ### path parameters
 GET {{url}}person/id_number_1337/comments/comment_number_42 HTTP/1.1
+
+### ferris
+GET {{url}}ferris HTTP/1.1
+
+###
+GET {{url}}guarded/foo HTTP/1.1
+X-SECRET: HIDDEN

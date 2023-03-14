@@ -1,6 +1,11 @@
 #![allow(unused)]
-
-use actix_web::{get, web, App, HttpRequest, HttpResponse, HttpServer};
+use actix_web::{
+    get,
+    guard::{self, Guard, GuardContext},
+    http::{self, header::HeaderValue},
+    web::{self, Path},
+    App, Error, HttpRequest, HttpResponse, HttpServer,
+};
 
 #[derive(Debug, serde::Deserialize)]
 pub struct PersonQuery {
@@ -13,6 +18,17 @@ pub struct PersonQuery {
 pub struct PersonParams {
     id: String,
     comment_id: String,
+}
+
+//From https://github.com/actix/examples/blob/master/guards/src/main.rs
+pub struct ApiGuard;
+impl Guard for ApiGuard {
+    fn check(&self, ctx: &GuardContext<'_>) -> bool {
+        ctx.head()
+            .headers()
+            .get("Accept-Version")
+            .map_or(false, |hv| hv.as_bytes() == b"2")
+    }
 }
 
 // endregion
@@ -33,10 +49,7 @@ async fn person_route_params(params: web::Path<PersonParams>) -> HttpResponse {
     HttpResponse::Ok().body(result_text)
 }
 
-async fn greet(name: web::Path<String>) -> HttpResponse {
-    HttpResponse::Ok().body(format!("Hello, {}!", name))
-}
-
+#[get("/person/{name}")]
 async fn greet_handler(req: HttpRequest, path: web::Path<String>) -> HttpResponse {
     let name = path.into_inner();
     if name.len() > 5 {
@@ -46,12 +59,37 @@ async fn greet_handler(req: HttpRequest, path: web::Path<String>) -> HttpRespons
     }
 }
 
+#[get("/ferris")]
+async fn display_ferris() -> HttpResponse {
+    HttpResponse::Ok()
+        .content_type("text/html; charset=utf-8")
+        .body(include_str!("../client/index.html"))
+}
+
+// imaginge open ssl or something
+const _SECRET: &str = "HIDDEN";
+const _HEADER: &str = "X-SECRET";
+
+//FIXME: this is not annotated with #[get("/")] so we can use web::get()::to() later
+
+async fn guarded_route() -> HttpResponse {
+    HttpResponse::Ok().body(format!("From guarded , you are authorized!"))
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let server = HttpServer::new(|| {
+    let server = HttpServer::new(move || {
         App::new()
             .service(person_route_params)
             .service(person_route_querry)
+            .service(greet_handler)
+            .service(display_ferris)
+            .service(
+                web::scope("/guarded")
+                    .route("/{params}", web::get().to(guarded_route))
+                    .guard(guard::Get())
+                    .guard(guard::Header(_HEADER, _SECRET)),
+            )
     })
     .bind("127.0.0.1:8080")?;
 
