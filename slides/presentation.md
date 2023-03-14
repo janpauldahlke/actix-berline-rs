@@ -86,6 +86,32 @@
 * `actix_web::test`: This macro is used to define tests that can run inside the Actix-web test framework.
 * `actix_web::test::init_service:` This macro is used to initialize a test server that can be used to test an entire application.
 * `actix_web::test::call_service`: This macro is used to send a request to a test server and receive the response.
+
+####5. asynchronous nature of web in actix
+* Actix-web is built on top of the async runtime Tokio. This means that all of the network I/O in actix-web is non-blocking and fully async. When a request comes in, actix-web uses Tokio to spawn a new task to handle that request. This allows actix-web to handle a large number of requests concurrently, without blocking the event loop.
+
+* Actix-web provides a number of built-in async middleware and utilities for working with async Rust, including:
+* `actix_web::web::Data`: A container that can hold any type that implements Send and Sync, allowing for easy sharing of state between different parts of an application.
+* `actix_web::web::Json`: A wrapper around serde_json for parsing JSON data in requests.
+* `actix_web::web::Bytes`: A wrapper around bytes for working with binary data in requests and responses.
+* `actix_web::guard::Guard`: A way to protect routes based on arbitrary conditions, such as the presence of certain headers in a request.
+
+####6. Conclusion
+1. Actix-web is a fast, lightweight, and flexible web framework for Rust.
+2. Actix-web provides an easy-to-use and concise API that allows developers to build web applications with ease.
+3. Actix-web leverages Rust's async/await syntax, making it a highly performant and scalable framework that is well-suited for modern web development.
+4. Actix-web provides a variety of features and capabilities, including middleware, error handling, request routing, and more, making it a powerful tool for building robust web applications.
+5. Actix-web's testing capabilities are also strong, with a range of testing tools and libraries available to help developers ensure their code is working as expected.
+6. By using actix-web, developers can take advantage of Rust's strengths, including its performance, memory safety, and expressive type system, to build reliable, efficient, and secure web applications.
+7. Actix-web is a great choice for developers who are interested in building web applications with Rust, and offers a powerful set of tools and features that make it well-suited for a wide range of use cases.
+
+
+
+
+
+
+
+
 ----
 -----
 CONCLUSION

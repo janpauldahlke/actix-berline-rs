@@ -159,7 +159,8 @@ mod tests {
         // let body = test::read_body(response).await;
         // println!("{:?}", body.clone()); //borrowed
         // assert_eq!(body, "From guarded , you are authorized!");
-        assert!(response.status().is_success());
+
+        assert!(response.status().is_success()); //200
     }
 
     #[actix_web::test]
@@ -173,6 +174,6 @@ mod tests {
             .to_request();
 
         let response = call_service(&app, request).await;
-        assert!(response.status().is_client_error());
+        assert!(response.status().is_client_error()); //405
     }
 }
