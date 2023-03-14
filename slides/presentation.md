@@ -105,16 +105,4 @@
 6. By using actix-web, developers can take advantage of Rust's strengths, including its performance, memory safety, and expressive type system, to build reliable, efficient, and secure web applications.
 7. Actix-web is a great choice for developers who are interested in building web applications with Rust, and offers a powerful set of tools and features that make it well-suited for a wide range of use cases.
 
-
-
-
-
-
-
-
-----
------
-CONCLUSION
-* Actix provides a powerful and flexible way to map URLs (routes) to functions and parameters
-* This allows you to create custom endpoints for your application that can handle specific requests and return specific responses
-* By using web::Path and web::Query, you can handle parameters passed in the request and use them in your handler functions.
+micdrop
