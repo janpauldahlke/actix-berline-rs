@@ -13,6 +13,8 @@ use actix_web::{
     App, Error, HttpRequest, HttpResponse, HttpServer,
 };
 
+use actix_session::Session;
+
 #[derive(Debug, serde::Deserialize)]
 pub struct PersonQuery {
     name: String,
@@ -92,7 +94,8 @@ async fn main() -> std::io::Result<()> {
     let server = HttpServer::new(move || {
         App::new()
             .wrap(Logger::default())
-            .wrap(Logger::new("%a %{User-Agent}i"))
+            //.wrap(Logger::new("%a %{User-Agent}i")) //https://actix.rs/docs/middleware#format
+            .wrap(middleware::DefaultHeaders::new().add(("XXX-Version", "GPT4"))) // add header fields like this by middleware
             .service(person_route_params)
             .service(person_route_querry)
             .service(greet_handler)
@@ -107,7 +110,8 @@ async fn main() -> std::io::Result<()> {
                 ),
             )
     })
-    .bind("127.0.0.1:8080")?;
+    .bind("127.0.0.1:8080")
+    .expect("Can not bind to port 8080");
 
     server.run().await
 }
