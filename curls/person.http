@@ -1,7 +1,7 @@
 @url = http://127.0.0.1:8080/
 
 ### query parameters
-GET http://127.0.0.1:8080/person?name=John&age=20&location=Hamburg HTTP/1.1
+GET http://127.0.0.1:8080/person?name=Jane&age=20 HTTP/1.1
 
 ###logic but wrong executed
 GET {{url}}person/Joh HTTP/1.1
@@ -14,13 +14,13 @@ Content-Type: application/json
 
 
 ### path parameters
-GET {{url}}person/id_number_1337/comments/comment_number_42 HTTP/1.1
+GET {{url}}person/112938z123/comments/122 HTTP/1.1
 
 ### ferris
 GET {{url}}ferris HTTP/1.1
 
 ###
 GET {{url}}guarded HTTP/1.1
-X-SECRET: HIDDEN
+X-SECRET: wrong
 
 

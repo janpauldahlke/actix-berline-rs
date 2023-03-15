@@ -1,10 +1,13 @@
 #![allow(unused)]
 use std::fmt::format;
 
+use env_logger::Env;
+
 use actix_web::{
     get,
     guard::{self, Guard, GuardContext},
     http::{self, header::HeaderValue},
+    middleware::{self, Logger},
     post,
     web::{self, Path},
     App, Error, HttpRequest, HttpResponse, HttpServer,
@@ -13,7 +16,7 @@ use actix_web::{
 #[derive(Debug, serde::Deserialize)]
 pub struct PersonQuery {
     name: String,
-    location: String,
+    location: Option<String>,
     age: u16,
 }
 
@@ -26,7 +29,7 @@ pub struct PersonParams {
 #[get("/person")]
 async fn person_route_querry(query: web::Query<PersonQuery>) -> HttpResponse {
     let result = format!(
-        "route query params are, name{} {} {}",
+        "route query params are, name{} {:?} {}",
         query.name, query.location, query.age
     );
     HttpResponse::Ok().body(result)
@@ -76,6 +79,7 @@ const _SECRET: &str = "HIDDEN";
 const _HEADER: &str = "X-SECRET";
 
 //FIXME: this is not annotated with #[get("/")] so we can use web::get()::to() later
+// we need web::resource("/guarded").route( as service
 
 async fn guarded_route() -> HttpResponse {
     HttpResponse::Ok().body(format!("From guarded , you are authorized!"))
@@ -83,8 +87,12 @@ async fn guarded_route() -> HttpResponse {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    env_logger::init_from_env(Env::default().default_filter_or("info"));
+
     let server = HttpServer::new(move || {
         App::new()
+            .wrap(Logger::default())
+            .wrap(Logger::new("%a %{User-Agent}i"))
             .service(person_route_params)
             .service(person_route_querry)
             .service(greet_handler)
@@ -157,14 +165,10 @@ mod tests {
 
         let request = TestRequest::default()
             .uri("/guarded")
-            .insert_header((_HEADER, _SECRET))
+            .insert_header((_HEADER, "different_secret"))
             .to_request();
 
         let response = call_service(&app, request).await;
-
-        // let body = test::read_body(response).await;
-        // println!("{:?}", body.clone()); //borrowed
-        // assert_eq!(body, "From guarded , you are authorized!");
 
         assert!(response.status().is_success()); //200
     }
